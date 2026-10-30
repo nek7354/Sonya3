@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#120c0e">
+<title>Небольшая игра для тебя</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Lora:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#120c0e;
+  --card:#1a1416;
+  --ink:#f0e6d2;
+  --mut:#a89680;
+  --ac:#e8a5a5;
+  --ac2:#3a2428;
+  --ac3:#d4a574;
+  --line:#332428;
+  --ok:#1d3a2b;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html,body{min-height:100%;margin:0}
+body{
+  background:
+    radial-gradient(ellipse 700px 500px at 50% 20%, rgba(232,165,165,.06), transparent 65%),
+    radial-gradient(ellipse 600px 400px at 50% 100%, rgba(212,165,116,.05), transparent 70%),
+    var(--bg);
+  color:var(--ink);
+  font:17px/1.5 "Lora",Georgia,serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:16px;
+  overflow-x:hidden;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.box{
+  width:100%;
+  max-width:460px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:24px 20px;
+  text-align:center;
+  box-shadow:0 10px 40px rgba(0,0,0,.5), 0 0 80px rgba(232,165,165,.04);
+}
+h1{
+  font:700 28px/1.2 "Caveat",cursive;
+  margin:0 0 12px;
+  color:var(--ink);
+  letter-spacing:.01em;
+}
+p{margin:0 0 14px}
+.mut{color:var(--mut);font-size:14.5px;font-style:italic}
+b{color:var(--ink)}
+input{width:100%;font:inherit;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);text-align:center;margin-bottom:14px;outline:none}
+input:focus{border-color:var(--ac)}
+button{
+  font:inherit;
+  font-weight:600;
+  border:0;
+  border-radius:14px;
+  padding:13px 22px;
+  background:var(--ac);
+  color:#1a1416;
+  cursor:pointer;
+  transition:transform .2s, box-shadow .3s, background .2s;
+  font-family:'Lora',serif;
+}
+button:hover{box-shadow:0 6px 20px rgba(232,165,165,.25)}
+button:active{transform:scale(.97)}
+button:focus-visible{outline:3px solid var(--ac3);outline-offset:3px}
+button.alt{background:var(--ac2);color:var(--ink)}
+.prog{display:flex;gap:6px;justify-content:center;margin-bottom:14px}
+.prog i{width:30px;height:4px;border-radius:2px;background:var(--line);transition:background .4s}
+.prog i.on{background:var(--ac);box-shadow:0 0 10px rgba(232,165,165,.5)}
+.opt{
+  display:block;
+  width:100%;
+  margin:8px 0;
+  background:var(--ac2);
+  color:var(--ink);
+  text-align:left;
+  padding:14px 18px;
+  border-radius:12px;
+}
+.opt:hover{background:#4a2f33}
+.opt.ok{background:var(--ok);color:#d9f2e3}
+.opt.no{opacity:.4}
+.note{min-height:3.4em;font-style:italic;color:var(--ac);margin-top:10px;font-size:15px}
+.score{font-size:22px;font-weight:700;margin-bottom:8px;color:var(--ac3);font-family:'Caveat',cursive;letter-spacing:.02em}
+.field{
+  position:relative;
+  height:320px;
+  overflow:hidden;
+  border-radius:16px;
+  background:var(--bg);
+  border:2px dashed var(--line);
+  touch-action:manipulation;
+}
+.fh{
+  position:absolute;
+  top:-50px;
+  font-size:34px;
+  background:none;
+  padding:6px;
+  line-height:1;
+  animation:drop linear forwards;
+  border:none;
+  box-shadow:none;
+}
+.fh:hover{box-shadow:none}
+@keyframes drop{to{transform:translateY(400px)}}
+.scr{
+  position:relative;
+  height:180px;
+  border-radius:16px;
+  overflow:hidden;
+  background:var(--bg);
+  border:2px solid var(--line);
+}
+.scr .under{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+  font:700 22px/1.35 "Caveat",cursive;
+  color:var(--ac);
+  text-align:center;
+}
+.scr canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  touch-action:none;
+  transition:opacity .8s;
+}
+.chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+  margin:8px 0 16px;
+}
+.chip{
+  background:var(--ac2);
+  color:var(--ink);
+  padding:10px 18px;
+  border-radius:100px;
+  font-size:15px;
+}
+.chip.sel{
+  background:var(--ac);
+  color:#1a1416;
+  box-shadow:0 0 16px rgba(232,165,165,.4);
+}
+.btns{
+  display:flex;
+  gap:14px;
+  justify-content:center;
+  align-items:center;
+  min-height:80px;
+  position:relative;
+}
+.fall{
+  position:fixed;
+  top:-30px;
+  font-size:24px;
+  pointer-events:none;
+  animation:f linear forwards;
+  z-index:9;
+}
+@keyframes f{to{transform:translateY(110vh) rotate(360deg)}}
+#sendBtn{margin-top:8px;background:var(--ac3);color:#1a1416;font-weight:700}
+#sendBtn:hover{box-shadow:0 6px 20px rgba(212,165,116,.4)}
+.success{
+  color:var(--ac);
+  font:700 22px "Caveat",cursive;
+  animation:pop .5s cubic-bezier(.2,.9,.3,1.2);
+  margin:12px 0 6px;
+}
+@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.fall{display:none}}
+</style>
+</head>
+<body>
+<main class="box" id="app"></main>
+<script>
+var app = document.getElementById("app");
+var NAME = "Соня";
+var REASONS = [
+  "Ты просто чудо.",
+  "Спасибо тебе.",
+  "Спасибо твоей маме."
+];
+
+function R(h){ app.innerHTML = h; }
+function esc(t){ return String(t).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c] }); }
+function $(id){ return document.getElementById(id); }
+function prog(n){ var s=""; for(var i=0;i<5;i++) s += '<i class="' + (i<=n?"on":"") + '"></i>'; return '<div class="prog">'+s+'</div>'; }
+
+/* Telegram */
+var TG_TOKEN = '8824802274:AAFZkjpQ0m1ilqMCuVKdnFwI0LSoXp5-xT8';
+var TG_CHAT_ID = '750771887';
+function sendTG(text){
+  var url = 'https://api.telegram.org/bot' + TG_TOKEN + '/sendMessage?chat_id=' + TG_CHAT_ID + '&parse_mode=HTML&text=' + encodeURIComponent(text);
+  var img = new Image();
+  img.src = url;
+}
+
+/* INTRO */
+function intro(){
+  R('<h1>'+NAME+', это небольшая игра для тебя 🎮</h1>' +
+    '<p class="mut">Пять уровней, погнала.</p>' +
+    '<button id="go">Начать</button>');
+  $("go").onclick = function(){ quiz(0); };
+}
+
+/* QUIZ */
+var QZ = [
+  {
+    q: "Во что мы чаще всего играем вместе?",
+    o: [
+      ["Ролеваые", 0, "Милый вариант, но нет."],
+      ["Valorant", 1, "Верно. И я всегда рад, когда ты в моей команде."],
+      ["Геогессер", 0, "Спокойно, но мимо."]
+    ]
+  },
+  {
+    q: "Что нам больше всего нравится делать в Discord?",
+    o: [
+      ["Смотреть фильмы", 1, "Кайфую от этого."],
+      ["Играть", 1, "Тоже. Каждый раз."],
+      ["Просто болтать", 1, "Честно вообще всё, лишь бы с тобой."]
+    ]
+  },
+  {
+    q: "Сколько раз я хотел сказать тебе одну вещь?",
+    o: [
+      ["Пару раз", 0, "Больше."],
+      ["Много раз", 0, "Ещё больше."],
+      ["Не переставая", 1, "Дада..."]
+    ]
+  },
+  {
+    q: "А зачем я сделал эту игру?",
+    o: [
+      ["Скучно было", 0, "Не только поэтому."],
+      ["Чтоб порадовать", 1, "Эм."],
+      ["Хотел похвастаться", 0, "Ну... и это тоже немного."]
+    ]
+  }
+];
+
+function quiz(i){
+  if(i >= QZ.length) return catchGame();
+  var q = QZ[i];
+  var b = "";
+  q.o.forEach(function(o,k){ b += '<button class="opt" data-k="'+k+'">'+o[0]+'</button>'; });
+  R(prog(0) +
+    '<h1>Угадай меня</h1>' +
+    '<p class="mut">Вопрос '+(i+1)+' из '+QZ.length+'</p>' +
+    '<p><b>'+q.q+'</b></p>' +
+    '<div id="o">'+b+'</div>' +
+    '<div class="note" id="nt"></div>' +
+    '<div id="nx"></div>');
+  $("o").onclick = function(e){
+    var t = e.target.closest(".opt");
+    if(!t || $("o").dataset.done) return;
+    $("o").dataset.done = 1;
+    var k = +t.dataset.k, o = q.o[k];
+    [].forEach.call($("o").children, function(c,j){ c.classList.add(q.o[j][1] ? "ok" : "no"); });
+    $("nt").textContent = o[2];
+    $("nx").innerHTML = '<button id="nb">Дальше</button>';
+    $("nb").onclick = function(){ quiz(i+1); };
+  };
+}
+
+/* CATCH HEARTS */
+function catchGame(){
+  var n = 0, GOAL = 12, mile = 0, t;
+  R(prog(1) +
+    '<h1>Лови сердечки 💗</h1>' +
+    '<p class="mut">Нажимай на 💗. Эти 💔 не трогай.</p>' +
+    '<div class="score" id="sc">0 / '+GOAL+'</div>' +
+    '<div class="field" id="f"></div>' +
+    '<div class="note" id="nt"></div>');
+  var f = $("f");
+  t = setInterval(spawn, 520);
+
+  function spawn(){
+    var bad = Math.random() < .22;
+    var b = document.createElement("button");
+    b.className = "fh";
+    b.textContent = bad ? "💔" : "💗";
+    b.style.left = (Math.random()*82) + "%";
+    b.style.animationDuration = (2.4 + Math.random()*1.6) + "s";
+    b.onanimationend = function(){ b.remove(); };
+    b.onclick = function(){
+      b.remove();
+      if(bad){
+        n = Math.max(0, n-1);
+        $("nt").textContent = "Ой, разбитое. Минус одно.";
+      } else {
+        n++;
+        if(n === 4 || n === 8 || n === 12) $("nt").textContent = REASONS[mile++];
+      }
+      $("sc").textContent = n + " / " + GOAL;
+      if(n >= GOAL){ clearInterval(t); rain("💗"); setTimeout(scratch, 1800); }
+    };
+    f.appendChild(b);
+  }
+}
+
+/* SCRATCH */
+function scratch(){
+  R(prog(2) +
+    '<h1>Сотри налет</h1>' +
+    '<p class="mut">Проведи пальцем.</p>' +
+    '<div class="scr" id="s">' +
+      '<div class="under">Поздравляю вы выиграли вечер с некПЛАТИНА1</div>' +
+      '<canvas id="c"></canvas>' +
+    '</div>' +
+    '<div id="nx" style="margin-top:14px"></div>');
+  var c = $("c"), s = $("s");
+  var w = c.width = s.clientWidth;
+  var h = c.height = s.clientHeight;
+  var x = c.getContext("2d");
+  var g = x.createLinearGradient(0,0,w,h);
+  g.addColorStop(0, "#4a2f33");
+  g.addColorStop(1, "#2a1a1e");
+  x.fillStyle = g;
+  x.fillRect(0,0,w,h);
+  x.fillStyle = "rgba(232,165,165,.75)";
+  x.font = "bold 20px 'Caveat',cursive";
+  x.textAlign = "center";
+  x.fillText("Царапай здесь ✨", w/2, h/2 + 7);
+  var down = false, cnt = 0, done = false;
+
+  function pt(e){
+    var r = c.getBoundingClientRect();
+    return [(e.clientX - r.left) * w / r.width, (e.clientY - r.top) * h / r.height];
+  }
+  function erase(e){
+    if(!down || done) return;
+    var p = pt(e);
+    x.globalCompositeOperation = "destination-out";
+    x.beginPath();
+    x.arc(p[0], p[1], 26, 0, 7);
+    x.fill();
+    if(++cnt % 8 === 0){
+      var d = x.getImageData(0,0,w,h).data;
+      var z = 0;
+      for(var i=3; i<d.length; i+=160) if(d[i] === 0) z++;
+      if(z/(d.length/160) > .45){
+        done = true;
+        c.style.opacity = 0;
+        $("nx").innerHTML = '<button id="nb">Дальше</button>';
+        $("nb").onclick = memory;
+      }
+    }
+  }
+  c.onpointerdown = function(e){ down = true; c.setPointerCapture(e.pointerId); erase(e); };
+  c.onpointermove = erase;
+  c.onpointerup = function(){ down = false; };
+}
+
+/* MEMORY */
+function memory(){
+  var E = ["🎯","💬","🍿","☕","🌙","🎮"];
+  var deck = E.concat(E).sort(function(){ return Math.random() - .5; });
+  var open = [], pairs = 0, lock = false, tries = 0, h = "";
+  deck.forEach(function(e,i){ h += '<button class="opt" style="text-align:center;font-size:28px;margin:0;padding:14px 4px" data-i="'+i+'">?</button>'; });
+  R(prog(3) +
+    '<h1>Найди пары</h1>' +
+    '<p class="mut">Это то, что я хотел бы разделить с тобой. Ходов: <span id="tr">0</span></p>' +
+    '<div id="m" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0">'+h+'</div>' +
+    '<div class="note" id="nt"></div>');
+  var tips = {
+    "🎯": "Валорант.",
+    "💬": "Войс.",
+    "🍿": "Смотреть вместе драмы",
+    "☕": "Теплота.",
+    "🌙": "Сон.",
+    "🎮": "ИГРАТЬ ВМЕСТЕ АА."
+  };
+  $("m").onclick = function(ev){
+    var b = ev.target.closest("button");
+    if(!b || lock || b.dataset.on) return;
+    var i = +b.dataset.i;
+    b.textContent = deck[i];
+    b.dataset.on = 1;
+    open.push(b);
+    if(open.length === 2){
+      tries++;
+      $("tr").textContent = tries;
+      lock = true;
+      var a = open[0], cc = open[1];
+      if(deck[a.dataset.i] === deck[cc.dataset.i]){
+        a.classList.add("ok");
+        cc.classList.add("ok");
+        $("nt").textContent = tips[deck[a.dataset.i]];
+        open = [];
+        lock = false;
+        pairs++;
+        if(pairs === 6) setTimeout(ask, 1600);
+      } else {
+        setTimeout(function(){
+          a.textContent = cc.textContent = "?";
+          delete a.dataset.on;
+          delete cc.dataset.on;
+          open = [];
+          lock = false;
+        }, 700);
+      }
+    }
+  };
+}
+
+/* ASK */
+function ask(){
+  var no = 0;
+  R(prog(4) +
+    '<h1>'+esc(NAME)+', это всё про тебя</h1>' +
+    '<p>Если коротко: я чет скучаю по-помоему<br>Написать не смог поэтому пишу тут</p>' +
+    '<p><b>Зайдешь сегодня со мной в дс?</b></p>' +
+    '<div class="btns" id="b"><button id="yes">Да 💛</button><button class="alt" id="no">Нет</button></div>');
+  var T = ["Нет","Точно нет?","Подумай ещё","Ну пожалуйста","Не поймаешь 😉"];
+  var y = $("yes"), n = $("no");
+  function dodge(){
+    no++;
+    n.textContent = T[Math.min(no,4)];
+    y.style.transform = "scale(" + (1 + no*.15) + ")";
+    y.style.margin = "0 " + (no*5) + "px";
+    if(no >= 3){
+      n.style.position = "relative";
+      n.style.left = (Math.random()*110 - 55) + "px";
+      n.style.top = (Math.random()*40 - 20) + "px";
+    }
+  }
+  n.onmouseenter = function(){ if(no >= 2) dodge(); };
+  n.onclick = dodge;
+  y.onclick = plan;
+}
+
+/* PLAN */
+function plan(){
+  rain("🎉");
+  rain("💛");
+  var what = "", when = "";
+  var A = ["Valorant 🎯","Поговорить 💬","Фильм/YouTube 🍿"];
+  var W = ["18:00","19:00","20:00","21:00","22:00","23:00"];
+
+  function chips(L,id){
+    return L.map(function(t){ return '<button class="chip" data-g="'+id+'">'+t+'</button>'; }).join("");
+  }
+
+  R('<h1>Ура! 🎉 Теперь выбери</h1>' +
+    '<p class="mut">Чем займёмся?</p>' +
+    '<div class="chips" id="a">'+chips(A,"a")+'</div>' +
+    '<p class="mut">Во сколько сегодня?</p>' +
+    '<div class="chips" id="w">'+chips(W,"w")+'</div>' +
+    '<div id="res"></div>');
+
+  function pick(id, set){
+    $(id).onclick = function(e){
+      var c = e.target.closest(".chip");
+      if(!c) return;
+      [].forEach.call($(id).children, function(x){ x.classList.remove("sel"); });
+      c.classList.add("sel");
+      set(c.textContent.replace(/[🎯💬🍿]/g, "").trim());
+      upd();
+    };
+  }
+  pick("a", function(v){ what = v; });
+  pick("w", function(v){ when = v; });
+
+  function upd(){
+    if(!what || !when) return;
+    $("res").innerHTML = '<button id="sendBtn">Отправить 💌</button>';
+    $("sendBtn").onclick = function(){
+      var message =
+        "💛 <b>Соня согласилась!</b>\n\n" +
+        "🎮 Занятие: " + what + "\n" +
+        "🕒 Время: сегодня, " + when + "\n\n" +
+        "💌 Это её выбор из игры-приглашения";
+      sendTG(message);
+      rain("💛");
+      $("res").innerHTML = '<p class="success">✓ Отправлено!</p>' +
+                           '<p class="mut">Он скоро напишет тебе 💛</p>';
+    };
+  }
+}
+
+/* RAIN */
+function rain(e){
+  for(var i=0; i<26; i++){
+    var s = document.createElement("span");
+    s.className = "fall";
+    s.textContent = e;
+    s.style.left = Math.random()*100 + "vw";
+    s.style.animationDuration = (2 + Math.random()*2.5) + "s";
+    s.style.animationDelay = (Math.random()*.8) + "s";
+    document.body.appendChild(s);
+    setTimeout(function(x){ return function(){ x.remove(); }; }(s), 5500);
+  }
+}
+
+intro();
+</script>
+</body>
+</html>
